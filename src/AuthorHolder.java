@@ -1,6 +1,4 @@
-
+@FunctionalInterface
 public interface AuthorHolder {
-    default String getAuthor(){
-        return "Bukharov Mikhail";
-    };
+    abstract String getAuthor();
 }

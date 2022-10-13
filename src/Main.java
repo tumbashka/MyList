@@ -19,9 +19,10 @@ public class Main {
 
 
 
-        Integer[] arr = new Integer[]{8,5};
-        list1.removeAll(List.of(arr));
-        System.out.println();
+        Integer[] arr = new Integer[]{4,3,1};
+        list1.retainAll(List.of(arr));
+
+
         for (int i = 0; i < list1.size(); i++) {
             System.out.print(list1.toArray()[i] + " ");
         }

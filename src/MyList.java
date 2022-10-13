@@ -21,7 +21,9 @@ public class MyList<T> implements List<T>, AuthorHolder {
     public MyList(T[] c) {
         Size = c.length;
         Elements = new Object[Size];
-        System.arraycopy(c, 0, Elements, 0, Size);
+        for (int i = 0; i < Size; i++) {
+            Elements[i] = c[i];
+        }
     }
 
 
@@ -51,13 +53,16 @@ public class MyList<T> implements List<T>, AuthorHolder {
     @Override
     public Object[] toArray() {
         Object[] arr = new Object[Size];
-        System.arraycopy(Elements, 0, arr, 0, Size);
+        for (int i = 0; i < Size; i++) {
+            arr[i] = Elements[i];
+        }
         return arr;
     }
 
     @Override
     public <E> E[] toArray(E[] a) {
-        if (a.length < Size) return (E[]) Arrays.copyOf(Elements, Size, a.getClass());
+        if (a.length < Size)
+            return (E[]) Arrays.copyOf(Elements, Size, a.getClass());
         for (int i = 0; i < Size; i++) {
             a[i] = (E) Elements[i];
         }
@@ -68,7 +73,11 @@ public class MyList<T> implements List<T>, AuthorHolder {
     @Override
     public boolean add(T t) {
         Object[] newArr = new Object[Size + 1];
-        if (Size >= 0) System.arraycopy(Elements, 0, newArr, 0, Size);
+        if (Size >= 0) {
+            for (int i = 0; i < Size; i++) {
+                newArr[i] = Elements[i];
+            }
+        }
         newArr[Size] = t;
         Size++;
         Elements = newArr;
@@ -79,13 +88,15 @@ public class MyList<T> implements List<T>, AuthorHolder {
     @Override
     public boolean remove(Object o) {
         if (Size == 0) return false;
-        Object[] newArr = new Object[Size + 1];
+        Object[] newArr = new Object[Size - 1];
         for (int i = 0; i < Size; i++) {
-            if (Elements[i] == o) {
+            if (Elements[i].equals(o)) {
                 for (int j = i; j < Size - 1; j++) {
                     Elements[j] = Elements[j + 1];
                 }
-                System.arraycopy(Elements, 0, newArr, 0, Size - 1);
+                for (int k = 0; k < Size - 1; k++) {
+                    newArr[k] = Elements[k];
+                }
                 Elements = newArr;
                 Size--;
                 return true;
@@ -115,27 +126,24 @@ public class MyList<T> implements List<T>, AuthorHolder {
 
     @Override
     public boolean addAll(Collection<? extends T> c) {
-        Object[] arrAdd = c.toArray();
-        if (arrAdd.length == 0)
-            return false;
-        Object[] newArr = new Object[arrAdd.length + Size];
-        if (Size >= 0) System.arraycopy(Elements, 0, newArr, 0, Size);
-        System.arraycopy(arrAdd, 0, newArr, Size, arrAdd.length);
-        Elements = newArr;
-        Size += arrAdd.length;
-        return true;
+        return addAll(Size, c);
     }
 
     @Override
     public boolean addAll(int index, Collection<? extends T> c) {
         Object[] arrAdd = c.toArray();
-        if ((arrAdd.length == 0) || (index > Size))
+        if ((arrAdd.length == 0) || (index > Size) || (index < 0))
             return false;
         Object[] newArr = new Object[arrAdd.length + Size];
-        if (index >= 0)
-            System.arraycopy(Elements, 0, newArr, 0, index);
-        System.arraycopy(arrAdd, 0, newArr, index, arrAdd.length);
-        System.arraycopy(Elements, index, newArr, index + arrAdd.length, Size - index);
+        for (int i = 0; i < index; i++) {
+            newArr[i] = Elements[i];
+        }
+        for (int i = 0; i < arrAdd.length; i++) {
+            newArr[i + index] = arrAdd[i];
+        }
+        for (int i = index; i < Size; i++) {
+            newArr[i + arrAdd.length] = Elements[i];
+        }
         Elements = newArr;
         Size += arrAdd.length;
         return true;
@@ -145,37 +153,39 @@ public class MyList<T> implements List<T>, AuthorHolder {
     public boolean removeAll(Collection<?> c) {
         if (Size == 0) return false;
         Object[] arr = c.toArray();
-        Object[] newArr = Elements;
-        boolean[] removingPositions = new boolean[Size];
-
-        for (Object o : arr) {//удаляемая коллекция
-            for (int j = 0; j < Size; j++) {// список
-                if (o == Elements[j]) {
-                    removingPositions[j] = true;
-                }
+        for (int j = 0; j < Size; j++) {
+            for (Object o : arr) {
+                remove(o);
             }
         }
-        for(boolean elem: removingPositions){
-            if (elem)
-                System.out.print(1+" ");
-            else System.out.print(0+" ");
-        }
-
-        for (int i = Size-1; i > 0; i--) {
-            if(removingPositions[i]){
-                for(int j=){
-/////////////////////////////////////////
-                }
-            }
-        }
-
-
         return true;
     }
 
     @Override
     public boolean retainAll(Collection<?> c) {
-        return false;
+        if (Size == 0) return false;
+        Object[] newArr = Elements;
+        Object[] arr = c.toArray();
+        for (int j = 0; j < Size; j++) {
+            boolean delete = true;
+            for (Object o : arr) {
+                if (newArr[j].equals(o))
+                    delete = false;
+            }
+            if (delete) {
+                for (int i = j; i < Size - 1; i++) {
+                    newArr[i] = newArr[i + 1];
+                }
+                j--;
+
+                Size--;
+            }
+        }
+        Elements = new Object[Size];
+        for(int i =0;i< Size;i++){
+            Elements[i] = newArr[i];
+        }
+        return true;
     }
 
     @Override
@@ -185,17 +195,18 @@ public class MyList<T> implements List<T>, AuthorHolder {
 
     @Override
     public void sort(Comparator<? super T> c) {
-        List.super.sort(c);
+        }
     }
 
     @Override
     public void clear() {
-
+        Elements = null;
+        Size = 0;
     }
 
     @Override
     public T get(int index) {
-        return null;
+        return (T) Elements[index];
     }
 
     @Override
@@ -245,6 +256,9 @@ public class MyList<T> implements List<T>, AuthorHolder {
 
     @Override
     public String getAuthor() {
-        return AuthorHolder.super.getAuthor();
+        return "Bukharov Mikhail";
     }
+
+    ;
+
 }
